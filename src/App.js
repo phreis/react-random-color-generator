@@ -134,7 +134,7 @@ export default function App() {
 
   const [boxColor, setBoxColor] = useState(color);
 
-  const [showAnimation, setShowAnimation] = useState(true);
+  const [showAnimation, setShowAnimation] = useState(false);
 
   function changeBoxColor(colorIn, lightnessIn) {
     setColor(colorIn);
