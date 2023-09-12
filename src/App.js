@@ -1,27 +1,24 @@
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
 import randomColor from 'randomcolor';
 import { useState } from 'react';
-import { keyframes } from 'styled-components';
+
+const coloredBoxStyles = (color, size) => css`
+  background-color: ${color};
+  width: ${size * 20}px;
+  height: ${size * 10}px;
+  transition: background-color 1000ms linear;
+`;
 
 function ColoredBox(props) {
   return (
-    <div
-      style={{
-        backgroundColor: props.randomColorCode,
-        width: `${props.size * 20}px`,
-        height: `${props.size * 10}px`,
-        transition: 'background-color 1000ms linear',
-      }}
-    >
-      Generated Color: {props.randomColorCode}
+    <div css={coloredBoxStyles(props.color, props.size)}>
+      Generated Color: {props.color}
     </div>
   );
 }
 
 function ControlPanel(props) {
-  const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
   return (
     <div
       style={{
@@ -29,16 +26,12 @@ function ControlPanel(props) {
         padding: '10px',
         width: '200px',
         height: 'auto',
-        /*         animation: `${spin} 2s linear infinite`, */
       }}
     >
       <label htmlFor="color-picker-hue">Hue </label>
       <input
         onInput={(event) => {
           const selectedColor = event.target.value;
-          props.setRandomColorCode(
-            props.getNewRandomColorCode(selectedColor, props.lightness),
-          );
           props.setColor(selectedColor);
         }}
         value={props.color}
@@ -52,9 +45,6 @@ function ControlPanel(props) {
         id="lighness"
         onInput={(event) => {
           const selectedLightness = event.target.value;
-          props.setRandomColorCode(
-            props.getNewRandomColorCode(props.color, selectedLightness),
-          );
           props.setLightness(selectedLightness);
         }}
       >
@@ -71,7 +61,9 @@ function ControlPanel(props) {
           name="size"
           min="1"
           max="20"
-          onInput={(event) => props.setSize(event.target.value)}
+          onInput={(event) => {
+            props.setSize(event.target.value);
+          }}
           value={props.size}
         />
       </div>
@@ -79,7 +71,7 @@ function ControlPanel(props) {
       <br />
       <button
         onClick={() =>
-          props.setRandomColorCode(
+          props.setColor(
             props.getNewRandomColorCode(props.color, props.lightness),
           )
         }
@@ -91,31 +83,27 @@ function ControlPanel(props) {
   );
 }
 
+function getNewRandomColorCode(hue, luminosity) {
+  return randomColor({
+    luminosity: luminosity,
+    hue: hue,
+  });
+}
+
 export default function App() {
-  const [color, setColor] = useState(
-    '#' + ((Math.random() * 0xffffff) << 0).toString(16).padStart(6, '0'),
-  );
+  const [color, setColor] = useState(getNewRandomColorCode());
 
   const [lightness, setLightness] = useState('light');
 
-  const [randomColorCode, setRandomColorCode] = useState(
-    getNewRandomColorCode(color, lightness),
-  );
-
   const [size, setSize] = useState(10);
 
-  function getNewRandomColorCode(hue, luminosity) {
-    return randomColor({
-      luminosity: luminosity,
-      hue: hue,
-    });
-  }
+  const boxColor = getNewRandomColorCode(color, lightness);
+
   return (
     <div>
       <h1>React Random Color Generator</h1>
       <br />
       <ControlPanel
-        setRandomColorCode={setRandomColorCode}
         getNewRandomColorCode={getNewRandomColorCode}
         color={color}
         setColor={setColor}
@@ -125,7 +113,7 @@ export default function App() {
         setSize={setSize}
       />
       <br />
-      <ColoredBox randomColorCode={randomColorCode} size={size} />
+      <ColoredBox color={boxColor} size={size} />
     </div>
   );
 }
