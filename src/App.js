@@ -3,16 +3,42 @@ import { css } from '@emotion/react';
 import randomColor from 'randomcolor';
 import { useState } from 'react';
 
-const coloredBoxStyles = (color, size) => css`
+const coloredBoxStyles = (color, size, showAnimation) => css`
+  @keyframes example {
+    0% {
+      left: 0px;
+      top: 0px;
+    }
+    25% {
+      left: 200px;
+      top: 0px;
+    }
+    50% {
+      left: 200px;
+      top: 200px;
+    }
+    75% {
+      left: 0px;
+      top: 200px;
+    }
+    100% {
+      left: 0px;
+      top: 0px;
+    }
+  }
   background-color: ${color};
   width: ${size * 20}px;
   height: ${size * 10}px;
+  position: relative;
   transition: background-color 1000ms linear;
+  animation-name: example;
+  animation-duration: 4s;
+  animation-iteration-count: ${showAnimation ? 'infinite' : 0};
 `;
 
 function ColoredBox(props) {
   return (
-    <div css={coloredBoxStyles(props.color, props.size)}>
+    <div css={coloredBoxStyles(props.color, props.size, props.showAnimation)}>
       Generated Color: {props.color}
     </div>
   );
@@ -32,7 +58,7 @@ function ControlPanel(props) {
       <input
         onInput={(event) => {
           const selectedColor = event.target.value;
-          props.setColor(selectedColor);
+          props.changeBoxColor(selectedColor, props.lightness);
         }}
         value={props.color}
         type="color"
@@ -45,7 +71,7 @@ function ControlPanel(props) {
         id="lighness"
         onInput={(event) => {
           const selectedLightness = event.target.value;
-          props.setLightness(selectedLightness);
+          props.changeBoxColor(props.color, selectedLightness);
         }}
       >
         <option value="bright">Bright</option>
@@ -68,13 +94,22 @@ function ControlPanel(props) {
         />
       </div>
       <br />
+      <div>
+        <label htmlFor="Animation">animate </label>
+        <input
+          type="checkbox"
+          id="animation"
+          name="animation"
+          onChange={(event) => {
+            props.setShowAnimation(event.target.checked);
+          }}
+          value={props.showAnimation}
+        />
+      </div>
+      <br />
       <br />
       <button
-        onClick={() =>
-          props.setColor(
-            props.getNewRandomColorCode(props.color, props.lightness),
-          )
-        }
+        onClick={() => props.changeBoxColor(props.color, props.lightness)}
         id="random-generate-button"
       >
         Generate
@@ -97,23 +132,31 @@ export default function App() {
 
   const [size, setSize] = useState(10);
 
-  const boxColor = getNewRandomColorCode(color, lightness);
+  const [boxColor, setBoxColor] = useState(color);
+
+  const [showAnimation, setShowAnimation] = useState(true);
+
+  function changeBoxColor(colorIn, lightnessIn) {
+    setColor(colorIn);
+    setLightness(lightnessIn);
+    setBoxColor(getNewRandomColorCode(colorIn, lightnessIn));
+  }
 
   return (
     <div>
       <h1>React Random Color Generator</h1>
       <br />
       <ControlPanel
-        getNewRandomColorCode={getNewRandomColorCode}
+        changeBoxColor={changeBoxColor}
         color={color}
-        setColor={setColor}
         lightness={lightness}
-        setLightness={setLightness}
         size={size}
         setSize={setSize}
+        showAnimation={showAnimation}
+        setShowAnimation={setShowAnimation}
       />
       <br />
-      <ColoredBox color={boxColor} size={size} />
+      <ColoredBox color={boxColor} size={size} showAnimation={showAnimation} />
     </div>
   );
 }
